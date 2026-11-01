@@ -40,7 +40,7 @@ Client-held signing keys, PIN-enforced signing, offline-verifiable signatures. T
 | Signatures (user and server) | Ed25519 |
 | Password and PIN authentication | OPAQUE (RFC 9807), ristretto255-SHA512 suite |
 | OPAQUE KSF for password | Argon2id (tuned to ~0.5–1 s on a mid-range phone) |
-| OPAQUE KSF for PIN | Identity / minimal (defense is server-side lockout, not client work) |
+| OPAQUE KSF for PIN | Argon2id at minimum parameters (8 KiB, 1 iteration, 1 lane); defense is server-side lockout, not client work |
 | Key derivation | HKDF-SHA256 |
 | Key wrapping | XChaCha20-Poly1305 (AEAD) |
 | Hashing | SHA-256 |
@@ -404,7 +404,7 @@ Offline verifier ships as a single self-contained HTML page and a CLI. Trust roo
 
 ### Cross-language constraints
 
-1. **OPAQUE suite must match exactly.** The Rust `opaque-ke` configuration (OPRF suite, KSF and its parameters, envelope mode, identifier handling) must equal the configuration `@serenity-kit/opaque` was built with. Pin both versions. The first integration test in the repo is a JS client registering and logging in against the Rust server and decrypting a blob wrapped at registration with the resulting export key. Nothing else is built until this passes.
+1. **OPAQUE suite must match exactly.** `@serenity-kit/opaque` 1.1.0 is built on `opaque-ke` 4.0 with ristretto255 OPRF, `TripleDh<Ristretto255, Sha512>`, base64url-no-pad encoding, and no custom identifiers. The Rust server uses the same suite with `Ksf = Identity`: the KSF runs only on the client, so the server's choice never touches the wire and the client selects Argon2 parameters per credential (`keyStretching` option). Pin both versions. `packages/sdk/src/opaque-spike.ts` against `crates/sahichap-server/src/bin/opaque-spike.rs` is the proof and runs in CI job 3.
 2. **Canonical encoding and `verify()` exist in both languages.** They are kept in agreement by the shared test vectors in `vectors/` (see Section 12). Any change to encoding, hashing, or derivation regenerates the vectors in the same commit.
 3. **The server never holds client secrets.** Rust code paths that receive `wrapped_seed`, OPAQUE messages, or signatures treat them as opaque bytes. No server code attempts to derive `ek_*`, `KEK`, or `seed`.
 4. Argon2id inside the browser WASM is roughly 2–3× slower than native. Tune the password KSF against a mid-range phone and run OPAQUE login in a Web Worker.
@@ -473,6 +473,7 @@ Job 3 is the gate; the first two can pass while the system is broken.
 
 ## 13. Build order
 
+0. OPAQUE spike: JS client against the Rust server half, both credentials, export key stable across logins. Done; see Section 11 constraint 1.
 1. `sahichap-core`: keypair from seed, wrap/unwrap, canonical encoding, manifest sign/verify, `verify()`. Unit tests. Generate `vectors/`.
 2. `packages/verify` and the crypto half of `packages/sdk` in TS, passing the same vectors.
 3. `sahichap-server`: OPAQUE registration/login for both credentials, attempt-counted lockout, session middleware. The JS ↔ Rust OPAQUE integration test passes here.
