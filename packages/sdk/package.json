@@ -4,10 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "spike": "tsx src/opaque-spike.ts"
+    "spike": "tsx test/opaque-spike.ts",
+    "test": "tsx --test src/*.test.ts"
   },
   "dependencies": {
-    "@serenity-kit/opaque": "1.1.0"
+    "@noble/ciphers": "^2.4.0",
+    "@noble/ed25519": "^3.2.0",
+    "@noble/hashes": "^2.4.0",
+    "@scure/bip39": "^2.4.0",
+    "@serenity-kit/opaque": "1.1.0",
+    "canonicalize": "^5.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.17.0",

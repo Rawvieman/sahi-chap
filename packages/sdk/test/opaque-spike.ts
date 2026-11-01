@@ -1,4 +1,5 @@
 // Build step zero: JS client <-> Rust server OPAQUE round trip.
+// Not SDK code: it drives crates/sahichap-server/src/bin/opaque-spike.rs.
 // Proves (1) the wire formats agree, (2) export_key is stable across logins,
 // (3) the server is KSF-agnostic, so password and PIN can stretch differently.
 import * as opaque from "@serenity-kit/opaque";
