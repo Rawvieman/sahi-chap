@@ -19,7 +19,6 @@ const manifest: Manifest = {
   stage_index: 0,
   prev_stage_hash: null,
   sign_nonce: "nonce-1",
-  client_time: "2026-11-01T10:00:00Z",
 };
 
 test("signs deterministically and verifies", () => {

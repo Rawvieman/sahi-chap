@@ -19,7 +19,6 @@ export interface Manifest {
   stage_index: number;
   prev_stage_hash: string | null;
   sign_nonce: string;
-  client_time: string; // RFC 3339 UTC, informational only
 }
 
 // JCS serialises floats, but Rust and JS can format them differently, and

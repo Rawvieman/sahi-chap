@@ -176,7 +176,7 @@ Password record unchanged.
 2. Client generates `seed_new`, `(sk_new, pk_new)`, new mnemonic.
 3. Client produces rotation statement:
    ```
-   rotation = { type: "sahichap/rotation/v1", user_id, old_pk, new_pk, client_time }
+   rotation = { type: "sahichap/rotation/v1", user_id, old_pk, new_pk }
    sig_old  = Ed25519.sign(sk_old, canonical(rotation))   // omitted if old seed lost
    sig_new  = Ed25519.sign(sk_new, canonical(rotation))
    ```
@@ -223,13 +223,12 @@ Rotation without `sig_old` (lost seed) is flagged as such in the log and in key-
   "intent": "approve",
   "stage_index": 1,
   "prev_stage_hash": "sha256:..." ,
-  "sign_nonce": "...",
-  "client_time": "2026-10-31T10:00:00Z"
+  "sign_nonce": "..."
 }
 ```
 
 - `prev_stage_hash` is `null` for stage 0. For stage N > 0 it is `SHA-256` of the canonical encoding of the ordered list of record hashes from stage N−1.
-- `client_time` is informational only. Never used for validity.
+- No client timestamp. The only time in a record is `server_time` (Section 6.5); the nonce expiry bounds when the signature could have been made.
 
 ```
 signature = Ed25519.sign(sk, canonical(manifest))
@@ -320,7 +319,7 @@ Checks:
 6. For `stage_index > 0`, `prev_stage_hash` equals hash of prior stage's records.
 7. Completion record lists exactly these records, is countersigned, and is chained.
 
-Report is structured: per-record pass/fail with reason codes, overall completion status, and warnings (e.g. `client_time` deviates > 10 min from `server_time`; rotation without `sig_old` in signer history).
+Report is structured: per-record pass/fail with reason codes, overall completion status, and warnings (e.g. rotation without `sig_old` in signer history).
 
 Offline verifier ships as a single self-contained HTML page and a CLI. Trust root is `server_pk`, distributed via platform domain, public repository, evidence page, and pinned in the verifier.
 
